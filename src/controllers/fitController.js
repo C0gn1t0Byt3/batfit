@@ -10,7 +10,6 @@ const BATTER_STYLE = ["shot_maker", "power", "all_rounder", "defensive"];
 const EXPERIENCE = ["beginner", "intermediate", "advanced"];
 
 async function start(req, res) {
-  // New fit always starts clean (no fitId)
   res.redirect("/fit/step1");
 }
 
@@ -34,12 +33,13 @@ async function step1(req, res, next) {
       experience: "intermediate",
     };
 
-    // If editing, load previous values
+    // If editing, load previous values (from JSON input stored on the fit)
     if (fitId) {
-      const row = await FitModel.getById(fitId, tenantId);
-      if (row) {
+      const fit = await FitModel.getById(tenantId, fitId); // ✅ correct arg order
+      if (fit && fit.input) {
+        const row = fit.input;
         form = {
-          fitId: row.id,
+          fitId: fitId,
           height_cm: row.height_cm ?? "",
           weight_kg: row.weight_kg ?? "",
           hand_size_cm: row.hand_size_cm ?? "",
@@ -67,9 +67,9 @@ async function step1(req, res, next) {
 
 async function results(req, res, next) {
   try {
-    const tenantId = 1;
     const fitId = req.body.fitId ? Number(req.body.fitId) : null;
 
+    // IMPORTANT: match your form field names exactly (hand_size_cm not hand_size)
     const input = {
       height_cm: req.body.height_cm,
       weight_kg: req.body.weight_kg,
@@ -83,22 +83,8 @@ async function results(req, res, next) {
       experience: req.body.experience,
     };
 
-    // compute-only recommendations
-    const result = await recommendBats(input, tenantId);
-
-    if (fitId) {
-      // Update existing fit
-      await FitModel.update(fitId, tenantId, input, result);
-      result.savedFitId = fitId;
-      result.mode = "UPDATED";
-    } else {
-      // Create new fit
-      const saved = await FitModel.create(tenantId, input, result);
-      result.savedFitId = saved.id;
-      result.mode = "NEW";
-    }
-
-    res.render("fit/results", { title: "Results", result });
+    const result = await recommendBats(input, fitId); // ✅ inside async handler
+    return res.render("fit/results", { title: "Results", result });
   } catch (err) {
     next(err);
   }

@@ -4,6 +4,14 @@ const express = require("express");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const FitModel = require("./models/FitModel");
+const fitHistoryRoutes = require("./routes/fitHistoryRoutes");
+const fitRoutes = require("./routes/fitRoutes");
+const adminBatsRoutes = require("./routes/adminBatsRoutes");
+
+(async () => {
+  await FitModel.ensureTable();
+})();
 
 const { env } = require("./config/env");
 const { limiter } = require("./middleware/rateLimit");
@@ -47,6 +55,9 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 
 // Routes
 app.use("/", routes);
+app.use("/", fitHistoryRoutes);
+app.use("/fit", fitRoutes);
+app.use("/", adminBatsRoutes);
 
 // Errors
 app.use(notFoundHandler);

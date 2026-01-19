@@ -52,3 +52,6 @@ CREATE TABLE IF NOT EXISTS fits (
 
   FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bats_unique
+ON bats (tenant_id, brand, model, size_label);

@@ -1,8 +1,11 @@
 // src/services/fitService.js
 const BatModel = require("../models/BatModel");
+const FitModel = require("../models/FitModel");
 const { scoreBats } = require("./recommendation/scoringEngine");
 
-async function recommendBats(input, tenantId = 1) {
+async function recommendBats(input, fitId = null) {
+  const tenantId = 1; // ✅ define it once, use everywhere
+
   // Load bats from DB
   const bats = await BatModel.listAll(tenantId);
 
@@ -21,10 +24,22 @@ async function recommendBats(input, tenantId = 1) {
     },
   };
 
+  // ✅ If editing an existing fit, update it (keeps same Fit ID)
+  if (fitId) {
+    await FitModel.update(tenantId, fitId, input, result);
+    result.savedFitId = Number(fitId);
+    result.mode = "Updated";
+    return result;
+  }
+
+  // ✅ Otherwise create a new fit
+  const saved = await FitModel.create(tenantId, input, result);
+  result.savedFitId = saved.id;
+  result.mode = "New";
   return result;
 }
 
-// Very simple placeholders (improve later)
+// placeholders (tune later)
 function inferSize(input) {
   const h = Number(input.height_cm);
   if (!Number.isFinite(h)) return "Short Handle (SH)";
