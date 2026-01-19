@@ -1,0 +1,24 @@
+<%
+  const content = `
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="fw-bold">Developer Wiki</h2>
+      <p class="text-muted">Add your assignment tutorial content here.</p>
+
+      <h5 class="mt-4">Architecture</h5>
+      <ul>
+        <li>Express routes render EJS pages and also expose JSON APIs.</li>
+        <li>Recommendation engine is isolated in <code>src/services/recommendation</code>.</li>
+        <li>SQLite stores bats and fitting sessions (easy to upgrade to Postgres later).</li>
+      </ul>
+
+      <h5 class="mt-4">REST Endpoints</h5>
+      <ul>
+        <li><code>GET /api/bats</code></li>
+        <li><code>POST /api/recommend</code></li>
+      </ul>
+    </div>
+  </div>
+  `;
+%>
+<%- include("../layouts/main", { title, body: content }) %>

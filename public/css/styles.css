@@ -1,0 +1,4 @@
+/* public/css/styles.css */
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+.card { border-radius: 1rem; }
+.navbar-brand { letter-spacing: 0.2px; }
