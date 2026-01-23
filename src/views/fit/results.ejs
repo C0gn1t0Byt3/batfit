@@ -59,100 +59,96 @@
                   </div>
                 </div>
 
-            
-                  </div>
-                </div>
 
               </div>
             </div>
 
-            <!-- RECOMMENDATIONS -->
-            <div class="row g-3">
-              <% (top || []).forEach(function(item, idx){ %>
-                <% var badgeClass=(idx===0) ? "bg-success" : "bg-secondary" ; var badgeText=(idx===0) ? "Best Match"
-                  : "Top Pick" ; var whyRaw=item && item.why; var whyArr=[]; if (Array.isArray(whyRaw)) { whyArr=whyRaw;
-                  } else if (typeof whyRaw==="string" && whyRaw.trim()) { whyArr=[whyRaw.trim()]; } var
-                  headline=whyArr.length ? whyArr[0] : "No explanation available." ; var bullets=(whyArr.length> 1) ?
-                  whyArr.slice(1, 6) : [];
-                  %>
+          </div>
+        </div>
 
-                  <div class="col-md-4">
-                    <div class="card shadow-sm h-100">
-                      <div class="card-body d-flex flex-column">
+        <!-- RECOMMENDATIONS -->
+        <div class="row g-3">
+          <% (top || []).forEach(function(item, idx){ %>
 
-                        <div class="d-flex justify-content-between align-items-start">
-                          <div>
-                            <h5 class="fw-bold mb-0">
-                              <%= item.bat.brand %>
-                            </h5>
-                            <div class="text-muted">
-                              <%= item.bat.model %>
-                            </div>
-                          </div>
-                          <span class="badge <%= badgeClass %>">
-                            <%= badgeText %>
-                          </span>
+            <% const badgeClass=(idx===0) ? "bg-success" : "bg-secondary" ; const badgeText=(idx===0) ? "Best Match"
+              : "Top Pick" ; const whyRaw=item && item.why; let whyArr=[]; if (Array.isArray(whyRaw)) whyArr=whyRaw;
+              else if (typeof whyRaw==="string" && whyRaw.trim()) whyArr=[whyRaw.trim()]; const headline=whyArr.length ?
+              whyArr[0] : "No explanation available." ; const bullets=(whyArr.length> 1) ? whyArr.slice(1) : [];
+              %>
+
+              <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                  <div class="card-body d-flex flex-column">
+
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h5 class="fw-bold mb-0">
+                          <%= item.bat.brand %>
+                        </h5>
+                        <div class="text-muted">
+                          <%= item.bat.model %>
                         </div>
+                      </div>
+                      <span class="badge <%= badgeClass %>">
+                        <%= badgeText %>
+                      </span>
+                    </div>
 
-                        <div class="mt-3 small">
-                          <div><strong>Size:</strong>
-                            <%= item.bat.size_label %>
-                          </div>
-                          <div><strong>Weight:</strong>
-                            <%= item.bat.weight_g %>g
-                          </div>
-                          <div><strong>Pick-up:</strong>
-                            <%= item.bat.pickup_rating %>/10
-                          </div>
-                          <div><strong>Sweet spot:</strong>
-                            <%= item.bat.sweet_spot %>
-                          </div>
-                          <div><strong>Profile:</strong>
-                            <%= item.bat.profile %>
-                          </div>
-                          <div><strong>Handle:</strong>
-                            <%= item.bat.handle_shape %> / <%= item.bat.handle_length %>
-                          </div>
-                        </div>
-
-                        <hr class="my-3" />
-
-                        <div class="small">
-                          <div class="fw-semibold mb-2">
-                            <%= headline %>
-                          </div>
-
-                          <% if (bullets.length) { %>
-                            <ul class="mb-0">
-                              <% bullets.forEach(function(r){ %>
-                                <li>
-                                  <%= r %>
-                                </li>
-                                <% }); %>
-                            </ul>
-                            <% } else { %>
-                              <div class="text-muted">No detail lines yet.</div>
-                              <% } %>
-
-                                <% if (whyArr.length> 6) { %>
-                                  <div class="text-muted mt-2">
-                                    + <%= (whyArr.length - 6) %> more notes
-                                  </div>
-                                  <% } %>
-                        </div>
-
+                    <div class="mt-3 small">
+                      <div><strong>Size:</strong>
+                        <%= item.bat.size_label %>
+                      </div>
+                      <div><strong>Weight:</strong>
+                        <%= item.bat.weight_g %>g
+                      </div>
+                      <div><strong>Pick-up:</strong>
+                        <%= item.bat.pickup_rating %>/10
+                      </div>
+                      <div><strong>Sweet spot:</strong>
+                        <%= item.bat.sweet_spot %>
+                      </div>
+                      <div><strong>Profile:</strong>
+                        <%= item.bat.profile %>
+                      </div>
+                      <div><strong>Handle:</strong>
+                        <%= item.bat.handle_shape %> / <%= item.bat.handle_length %>
                       </div>
                     </div>
+
+                    <hr class="my-3" />
+
+                    <div class="small">
+                      <div class="fw-semibold mb-2">
+                        <%= headline %>
+                      </div>
+
+                      <% if (bullets.length) { %>
+                        <ul class="mb-0">
+                          <% bullets.forEach(function(r){ %>
+                            <li>
+                              <%= r %>
+                            </li>
+                            <% }); %>
+                        </ul>
+                        <% } else { %>
+                          <div class="text-muted">No detail lines yet.</div>
+                          <% } %>
+                    </div>
+
                   </div>
-                  <% }); %>
-            </div>
+                </div>
+              </div>
 
-            <div class="mt-4 d-flex gap-2">
-              <a class="btn btn-success btn-lg" href="/fit/start">Start New Fit</a>
-              <a class="btn btn-outline-secondary btn-lg" href="/api/bats" target="_blank">View Bats JSON</a>
-            </div>
+              <% }); %>
+        </div>
 
-          </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <a class="btn btn-success btn-lg" href="/fit/start">Start New Fit</a>
+          <a class="btn btn-outline-secondary btn-lg" href="/api/bats" target="_blank">View Bats JSON</a>
+        </div>
+
+        </div>
         </div>
     </main>
 
