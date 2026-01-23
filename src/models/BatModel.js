@@ -92,4 +92,93 @@ async function upsertMany(tenantId, bats) {
   return { inserted, updated, total: bats.length };
 }
 
-module.exports = { listAll, getById, adminList, clearTenant, upsertMany };
+async function existingKeys(tenantId, keys) {
+  // keys = [{brand, model, size_label}, ...]
+  // Build a WHERE OR list (fine for <= 1000 rows)
+  if (!keys.length) return new Set();
+
+  const clauses = [];
+  const params = [tenantId];
+
+  for (const k of keys) {
+    clauses.push(`(brand = ? AND model = ? AND size_label = ?)`);
+    params.push(k.brand, k.model, k.size_label || "");
+  }
+
+  const rows = await all(
+    `SELECT brand, model, size_label
+     FROM bats
+     WHERE tenant_id = ? AND (${clauses.join(" OR ")})`,
+    params
+  );
+
+  const set = new Set();
+  for (const r of rows) set.add(`${r.brand}||${r.model}||${r.size_label || ""}`);
+  return set;
+}
+
+async function adminListForExport(tenantId) {
+  return await all(
+    `SELECT brand, model, size_label, weight_g, pickup_rating, sweet_spot, profile,
+            handle_shape, handle_length, bow, notes, image_url
+     FROM bats
+     WHERE tenant_id = ?
+     ORDER BY brand, model, size_label`,
+    [tenantId]
+  );
+}
+
+async function adminListFiltered(tenantId, { q = "", brand = "", profile = "", sweet_spot = "", limit = 1000 } = {}) {
+  const where = ["tenant_id = ?"];
+  const params = [tenantId];
+
+  if (q && q.trim()) {
+    where.push("(brand LIKE ? OR model LIKE ?)");
+    const like = `%${q.trim()}%`;
+    params.push(like, like);
+  }
+  if (brand) {
+    where.push("brand = ?");
+    params.push(brand);
+  }
+  if (profile) {
+    where.push("profile = ?");
+    params.push(profile);
+  }
+  if (sweet_spot) {
+    where.push("sweet_spot = ?");
+    params.push(sweet_spot);
+  }
+
+  params.push(limit);
+
+  return await all(
+    `SELECT * FROM bats
+     WHERE ${where.join(" AND ")}
+     ORDER BY brand, model, size_label
+     LIMIT ?`,
+    params
+  );
+}
+
+async function adminFilterOptions(tenantId) {
+  const brands = await all(`SELECT DISTINCT brand FROM bats WHERE tenant_id = ? ORDER BY brand`, [tenantId]);
+  const profiles = await all(`SELECT DISTINCT profile FROM bats WHERE tenant_id = ? AND profile <> '' ORDER BY profile`, [tenantId]);
+  const sweetSpots = await all(`SELECT DISTINCT sweet_spot FROM bats WHERE tenant_id = ? AND sweet_spot <> '' ORDER BY sweet_spot`, [tenantId]);
+
+  return {
+    brands: brands.map(r => r.brand),
+    profiles: profiles.map(r => r.profile),
+    sweetSpots: sweetSpots.map(r => r.sweet_spot),
+  };
+}
+
+async function listBrands(tenantId) {
+  return await all(
+    `SELECT DISTINCT brand FROM bats WHERE tenant_id = ? AND brand IS NOT NULL AND brand <> '' ORDER BY brand`,
+    [tenantId]
+  );
+}
+
+
+module.exports = { listAll, getById, adminList, clearTenant, upsertMany, existingKeys, adminListForExport, adminListFiltered, adminFilterOptions, listBrands };

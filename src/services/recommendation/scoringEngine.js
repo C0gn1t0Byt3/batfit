@@ -1,15 +1,103 @@
 // src/services/recommendation/scoringEngine.js
 const { explainPick } = require("./explain");
 
+function parseShotMap(input) {
+  var raw = input && input.shot_map_json ? input.shot_map_json : "[]";
+  if (Array.isArray(raw)) return raw;
+  try {
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function computeShotFeatures(shotMap) {
+  var n = Array.isArray(shotMap) ? shotMap.length : 0;
+  if (!n) return { n: 0, aerialRatio: 0, aggression: 0 };
+
+  var aerial = 0;
+  var ag = 0;
+
+  for (var i = 0; i < shotMap.length; i++) {
+    var s = shotMap[i] || {};
+    var t = (s.type || "").toString().toLowerCase();
+    if (t === "aerial") aerial++;
+
+    if (s.ring === 2) ag += 1.0;
+    else if (s.ring === 1) ag += 0.5;
+    else ag += 0.2;
+  }
+
+  return {
+    n: n,
+    aerialRatio: aerial / n,
+    aggression: Math.max(0, Math.min(1, ag / n))
+  };
+}
+
+function applyShotMapAdjustment(baseScore, bat, shotMap) {
+  var f = computeShotFeatures(shotMap);
+  if (!f.n) return baseScore;
+
+  var pickup = Number(bat.pickup_rating || 0);
+  var sweet = (bat.sweet_spot || "").toString().toLowerCase();
+  var profile = (bat.profile || "").toString().toLowerCase();
+
+  var aerialIntent = f.aerialRatio; // 0..1
+  var pickupNorm = Math.max(0, Math.min(1, pickup / 10));
+
+  var sweetAerial = (sweet === "high") ? 1 : (sweet === "mid" ? 0.7 : 0.3);
+  var sweetGround = (sweet === "low") ? 1 : (sweet === "mid" ? 0.7 : 0.3);
+
+  var profileAerial = (profile === "toe_heavy") ? 1 : 0.7;
+  var profileGround = (profile === "balanced") ? 1 : 0.7;
+
+  var aerialMatch = (0.55 * pickupNorm) + (0.25 * sweetAerial) + (0.20 * profileAerial);
+  var groundMatch = (0.45 * (1 - Math.abs(pickupNorm - 0.75))) + (0.35 * sweetGround) + (0.20 * profileGround);
+
+  var match = (aerialIntent * aerialMatch) + ((1 - aerialIntent) * groundMatch);
+
+  // +/- ~8 points
+  var delta = Math.round((match - 0.5) * 16);
+  delta += Math.round(f.aggression * 2);
+
+  return Math.round(baseScore * (0.92 + match * 0.16 + f.aggression * 0.04));
+
+}
+
 function scoreBats(input, bats) {
+  // 1) infer size target once
+  const sizeTarget = inferredSizeLabel(input);
+
+  // 2) parse shot map once
+  const shotMap = parseShotMap(input);
+
   const scored = bats
     .map((bat) => {
-      const score = computeScore(input, bat);
+      // base score (your current scoring)
+      let score = computeScore(input, bat, sizeTarget);
+
+      // 3) wagon wheel adjustment (small, explainable nudge)
+      score = applyShotMapAdjustment(score, bat, shotMap);
+
+      // keep score within 0..100
+      score = Math.round(Math.max(0, Math.min(100, score)));
+
+      // 4) generate why based on FINAL score
       let why = explainPick(input, bat, score);
 
       // GUARANTEE array
       if (!Array.isArray(why)) {
         why = (typeof why === "string" && why.trim()) ? [why] : ["Match details unavailable."];
+      }
+
+      // Optional: add a human-readable note about the shot map effect
+      // only if there were shots recorded
+      if (Array.isArray(shotMap) && shotMap.length) {
+        const f = computeShotFeatures(shotMap);
+        const aerialPct = Math.round(f.aerialRatio * 100);
+        why.unshift(`Wagon wheel used: ${aerialPct}% aerial intent (${shotMap.length} shots).`);
       }
 
       return { bat, score, why };
@@ -18,6 +106,7 @@ function scoreBats(input, bats) {
 
   return scored;
 }
+
 
 function computeScore(input, bat, sizeTarget) {
   let s = 0;

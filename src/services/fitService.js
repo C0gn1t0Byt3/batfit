@@ -7,7 +7,13 @@ async function recommendBats(input, fitId = null) {
   const tenantId = 1; // ✅ define it once, use everywhere
 
   // Load bats from DB
-  const bats = await BatModel.listAll(tenantId);
+  let bats = await BatModel.listAll(tenantId);
+
+  if (input.brand_filter && input.brand_filter !== "any") {
+    bats = bats.filter(b => b.brand === input.brand_filter);
+  }
+
+  console.log("Filtered bats count:", bats.length, "brand:", input.brand_filter);
 
   // Score all bats (returns sorted highest score first)
   const scored = scoreBats(input, bats);

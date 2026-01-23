@@ -31,26 +31,24 @@ CREATE TABLE IF NOT EXISTS bats (
 
 CREATE TABLE IF NOT EXISTS fits (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  tenant_id INTEGER NOT NULL DEFAULT 1,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  tenant_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
 
-  -- user inputs
-  height_cm INTEGER NOT NULL,
-  weight_kg INTEGER NOT NULL,
+  height_cm INTEGER,
+  weight_kg INTEGER,
   hand_size_cm REAL,
   floor_to_wrist_cm REAL,
-
-  shot_type TEXT NOT NULL,
-  conditions TEXT NOT NULL,
-  footwork TEXT NOT NULL,
-  batter_style TEXT NOT NULL,
+  shot_type TEXT,
+  conditions TEXT,
+  footwork TEXT,
+  batter_style TEXT,
   max_distance_m INTEGER,
-  experience TEXT NOT NULL,
+  experience TEXT,
+  brand_filter TEXT,
 
-  -- computed outputs as JSON strings for simplicity
-  result_json TEXT NOT NULL,
-
-  FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+  input_json TEXT NOT NULL,
+  shot_map_json TEXT,
+  result_json TEXT NOT NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bats_unique

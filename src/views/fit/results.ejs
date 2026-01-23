@@ -1,133 +1,250 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title><%= title %></title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>
+    <%= title %>
+  </title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/styles.css"/>
+  <link rel="stylesheet" href="/css/styles.css" />
 </head>
+
 <body class="bg-light">
 
-<%- include("../partials/navbar") %>
+  <%- include("../partials/navbar") %>
 
-<main class="container py-4">
-  <% const top = (result && result.top) ? result.top : []; %>
+    <main class="container py-4">
+      <% var top=(result && result.top) ? result.top : []; %>
 
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
+        <div class="row justify-content-center">
+          <div class="col-lg-10">
 
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <div>
-          <h2 class="fw-bold mb-0">Your Recommendations</h2>
-          <div class="text-muted">
-            Fit ID: <strong><%= result && result.savedFitId ? result.savedFitId : "" %></strong>
-            <% if (result && result.mode) { %>
-              <span class="ms-2 badge bg-info text-dark"><%= result.mode %></span>
-            <% } %>
-          </div>
-        </div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div>
+                <h2 class="fw-bold mb-0">Your Recommendations</h2>
+                <div class="text-muted">
+                  Fit ID: <strong>
+                    <%= (result && result.savedFitId) ? result.savedFitId : "" %>
+                  </strong>
+                  <% if (result && result.mode) { %>
+                    <span class="ms-2 badge bg-info text-dark">
+                      <%= result.mode %>
+                    </span>
+                    <% } %>
+                </div>
+              </div>
 
-        <a class="btn btn-outline-secondary"
-           href="/fit/step1?fitId=<%= result && result.savedFitId ? result.savedFitId : "" %>">
-          Edit Inputs
-        </a>
-      </div>
-
-      <div class="card shadow-sm mb-3">
-        <div class="card-body">
-          <h5 class="fw-semibold mb-2">Summary</h5>
-          <div class="row g-2 small">
-            <div class="col-md-6">
-              <strong>Suggested size:</strong>
-              <%= (result && result.summary) ? result.summary.recommendedSize : "" %>
+              <a class="btn btn-outline-secondary"
+                href="/fit/step1?fitId=<%= (result && result.savedFitId) ? result.savedFitId : "" %>">
+                Edit Inputs
+              </a>
             </div>
-            <div class="col-md-6">
-              <strong>Pick-up preference:</strong>
-              <%= (result && result.summary) ? result.summary.pickupPreference : "" %>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="row g-3">
-        <% top.forEach(function(item, idx) { %>
-          <%
-            let badgeClass = "bg-secondary";
-            let badgeText = "Top Pick";
-            if (idx === 0) { badgeClass = "bg-success"; badgeText = "Best Match"; }
+            <!-- SUMMARY -->
+            <div class="card shadow-sm mb-3">
+              <div class="card-body">
+                <h5 class="fw-semibold mb-2">Summary</h5>
 
-            // Ensure why is always an array
-            let whyArr = [];
-            if (Array.isArray(item.why)) whyArr = item.why;
-            else if (typeof item.why === "string" && item.why.trim()) whyArr = [item.why];
-
-            // Show only a short preview (no UI toggles)
-            const headline = whyArr.length ? whyArr[0] : "No explanation available.";
-            const bullets = (whyArr.length > 1) ? whyArr.slice(1, 6) : []; // max 5 bullets
-          %>
-
-          <div class="col-md-4">
-            <div class="card shadow-sm h-100">
-              <div class="card-body d-flex flex-column">
-
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 class="fw-bold mb-0"><%= item.bat.brand %></h5>
-                    <div class="text-muted"><%= item.bat.model %></div>
+                <div class="row g-2 small">
+                  <div class="col-md-6">
+                    <strong>Suggested size:</strong>
+                    <%= (result && result.summary) ? result.summary.recommendedSize : "" %>
                   </div>
-                  <span class="badge <%= badgeClass %>"><%= badgeText %></span>
+                  <div class="col-md-6">
+                    <strong>Pick-up preference:</strong>
+                    <%= (result && result.summary) ? result.summary.pickupPreference : "" %>
+                  </div>
                 </div>
 
-                <div class="mt-3 small">
-                  <div><strong>Size:</strong> <%= item.bat.size_label %></div>
-                  <div><strong>Weight:</strong> <%= item.bat.weight_g %>g</div>
-                  <div><strong>Pick-up:</strong> <%= item.bat.pickup_rating %>/10</div>
-                  <div><strong>Sweet spot:</strong> <%= item.bat.sweet_spot %></div>
-                  <div><strong>Profile:</strong> <%= item.bat.profile %></div>
-                  <div><strong>Handle:</strong> <%= item.bat.handle_shape %> / <%= item.bat.handle_length %></div>
-                </div>
-
-                <hr class="my-3"/>
-
-                <div class="small">
-                  <div class="fw-semibold mb-2"><%= headline %></div>
-
-                  <% if (bullets.length) { %>
-                    <ul class="mb-0">
-                      <% bullets.forEach(function(r){ %>
-                        <li><%= r %></li>
-                      <% }); %>
-                    </ul>
-                  <% } else { %>
-                    <div class="text-muted">No detail lines yet.</div>
-                  <% } %>
-
-                  <% if (whyArr.length > 6) { %>
-                    <div class="text-muted mt-2">
-                      + <%= (whyArr.length - 6) %> more notes (we can add a “Details” page later)
-                    </div>
-                  <% } %>
+            
+                  </div>
                 </div>
 
               </div>
             </div>
+
+            <!-- RECOMMENDATIONS -->
+            <div class="row g-3">
+              <% (top || []).forEach(function(item, idx){ %>
+                <% var badgeClass=(idx===0) ? "bg-success" : "bg-secondary" ; var badgeText=(idx===0) ? "Best Match"
+                  : "Top Pick" ; var whyRaw=item && item.why; var whyArr=[]; if (Array.isArray(whyRaw)) { whyArr=whyRaw;
+                  } else if (typeof whyRaw==="string" && whyRaw.trim()) { whyArr=[whyRaw.trim()]; } var
+                  headline=whyArr.length ? whyArr[0] : "No explanation available." ; var bullets=(whyArr.length> 1) ?
+                  whyArr.slice(1, 6) : [];
+                  %>
+
+                  <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                      <div class="card-body d-flex flex-column">
+
+                        <div class="d-flex justify-content-between align-items-start">
+                          <div>
+                            <h5 class="fw-bold mb-0">
+                              <%= item.bat.brand %>
+                            </h5>
+                            <div class="text-muted">
+                              <%= item.bat.model %>
+                            </div>
+                          </div>
+                          <span class="badge <%= badgeClass %>">
+                            <%= badgeText %>
+                          </span>
+                        </div>
+
+                        <div class="mt-3 small">
+                          <div><strong>Size:</strong>
+                            <%= item.bat.size_label %>
+                          </div>
+                          <div><strong>Weight:</strong>
+                            <%= item.bat.weight_g %>g
+                          </div>
+                          <div><strong>Pick-up:</strong>
+                            <%= item.bat.pickup_rating %>/10
+                          </div>
+                          <div><strong>Sweet spot:</strong>
+                            <%= item.bat.sweet_spot %>
+                          </div>
+                          <div><strong>Profile:</strong>
+                            <%= item.bat.profile %>
+                          </div>
+                          <div><strong>Handle:</strong>
+                            <%= item.bat.handle_shape %> / <%= item.bat.handle_length %>
+                          </div>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="small">
+                          <div class="fw-semibold mb-2">
+                            <%= headline %>
+                          </div>
+
+                          <% if (bullets.length) { %>
+                            <ul class="mb-0">
+                              <% bullets.forEach(function(r){ %>
+                                <li>
+                                  <%= r %>
+                                </li>
+                                <% }); %>
+                            </ul>
+                            <% } else { %>
+                              <div class="text-muted">No detail lines yet.</div>
+                              <% } %>
+
+                                <% if (whyArr.length> 6) { %>
+                                  <div class="text-muted mt-2">
+                                    + <%= (whyArr.length - 6) %> more notes
+                                  </div>
+                                  <% } %>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                  <% }); %>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+              <a class="btn btn-success btn-lg" href="/fit/start">Start New Fit</a>
+              <a class="btn btn-outline-secondary btn-lg" href="/api/bats" target="_blank">View Bats JSON</a>
+            </div>
+
           </div>
-        <% }); %>
-      </div>
+        </div>
+    </main>
 
-      <div class="mt-4 d-flex gap-2">
-        <a class="btn btn-success btn-lg" href="/fit/start">Start New Fit</a>
-        <a class="btn btn-outline-secondary btn-lg" href="/api/bats" target="_blank">View Bats JSON</a>
-      </div>
+    <%- include("../partials/footer") %>
 
-    </div>
-  </div>
-</main>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<%- include("../partials/footer") %>
+      <script>
+        function drawCricketPitch(ctx, w, h) {
+          ctx.clearRect(0, 0, w, h);
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+          // Outfield
+          ctx.fillStyle = "#0b6b3a";
+          ctx.fillRect(0, 0, w, h);
+
+          var pad = 12;
+
+          // Make pitch smaller so the inner circle is clearly larger
+          var pitchW = w * 0.16;
+          var pitchH = h * 0.44;
+          var px = (w - pitchW) / 2;
+          var py = h * 0.20; // push pitch up a bit
+
+          ctx.fillStyle = "#caa66a";
+          ctx.fillRect(px, py, pitchW, pitchH);
+
+          // Creases
+          ctx.strokeStyle = "rgba(255,255,255,0.8)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(px, py + pitchH * 0.15); ctx.lineTo(px + pitchW, py + pitchH * 0.15);
+          ctx.moveTo(px, py + pitchH * 0.85); ctx.lineTo(px + pitchW, py + pitchH * 0.85);
+          ctx.stroke();
+
+          // Stumps
+          ctx.fillStyle = "rgba(0,0,0,0.5)";
+          ctx.fillRect(w / 2 - 3, py + pitchH * 0.13, 6, 6);
+          ctx.fillRect(w / 2 - 3, py + pitchH * 0.87 - 6, 6, 6);
+
+          // Big inner circle centered below pitch (mostly in outfield)
+          var r = Math.min(w, h) * 0.38;
+          var cx = w / 2;
+          var cy = py + pitchH + r * 0.25; // place center below pitch
+
+          // Keep circle visible
+          if (cy + r > h - pad) cy = h - pad - r;
+          if (cy - r < pad) cy = pad + r;
+
+          ctx.strokeStyle = "rgba(255,255,255,0.35)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+
+        function drawShotDots(ctx, w, h, shots) {
+          for (var i = 0; i < shots.length; i++) {
+            var s = shots[i];
+            var x = (s.x || 0) * w;
+            var y = (s.y || 0) * h;
+
+            ctx.beginPath();
+            ctx.fillStyle = (String(s.type).toLowerCase() === "aerial")
+              ? "rgba(255,255,255,0.95)"
+              : "rgba(0,0,0,0.85)";
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        (function initShotMapPreview() {
+          var canvas = document.getElementById("shotMapPreview");
+          if (!canvas) return;
+
+          var rect = canvas.getBoundingClientRect();
+          canvas.width = rect.width;
+          canvas.height = rect.height;
+
+          var ctx = canvas.getContext("2d");
+          var w = canvas.width, h = canvas.height;
+
+          var shots = [];
+          var el = document.getElementById("shotMapPreviewData");
+          var raw = (el && el.textContent) ? el.textContent : "[]";
+          try { shots = JSON.parse(raw); } catch (e) { shots = []; }
+
+          drawCricketPitch(ctx, w, h);
+          drawShotDots(ctx, w, h, shots);
+        })();
+      </script>
+
 </body>
+
 </html>
