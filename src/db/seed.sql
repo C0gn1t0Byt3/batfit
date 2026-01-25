@@ -1,16 +1,67 @@
 -- src/db/seed.sql
--- Simple seed bats (only inserts if table is empty)
-INSERT INTO bats (tenant_id, brand, model, size_label, weight_g, pickup_rating, sweet_spot, profile, handle_shape, handle_length, bow, notes, image_url)
-SELECT 1, 'Kookaburra', 'Kahuna 1000', 'SH', 1180, 7, 'mid', 'balanced', 'oval', 'standard', 'mid',
-       'All-round profile, forgiving middle.', '/img/bats/bat-001.jpg'
-WHERE NOT EXISTS (SELECT 1 FROM bats);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bats_unique ON bats(tenant_id, brand, model, size_label);
 
-INSERT INTO bats (tenant_id, brand, model, size_label, weight_g, pickup_rating, sweet_spot, profile, handle_shape, handle_length, bow, notes, image_url)
-SELECT 1, 'Gray-Nicolls', 'Alpha 1.1', 'SH', 1210, 6, 'high', 'toe_heavy', 'oval', 'standard', 'high',
-       'Power profile, higher sweet spot.', '/img/bats/bat-002.jpg'
-WHERE NOT EXISTS (SELECT 1 FROM bats WHERE brand='Gray-Nicolls' AND model='Alpha 1.1');
+INSERT OR IGNORE INTO bats (
+  tenant_id, brand, model, size_label, weight_g, pickup_rating,
+  sweet_spot, profile, handle_shape, handle_length, bow, notes, image_url
+) VALUES
+(1,'GM', 'Verva Original', 'SH', 1210, 6.5, 'low', 'toe_heavy', 'oval', 'standard', 'medium', 'Big low middle; power-focused pick-up', NULL),
+(1,'GM', 'Verva 909', 'SH', 1200, 6.7, 'low', 'toe_heavy', 'oval', 'standard', 'medium', 'Power profile; slightly lighter than Original', NULL),
+(1,'GM', 'Verva 808', 'SH', 1185, 7.0, 'low', 'power', 'oval', 'standard', 'medium', 'Power profile; improved pick-up vs heavier Verva', NULL),
+(1,'GM', 'Verva 404', 'SH', 1165, 7.4, 'low', 'power', 'oval', 'standard', 'medium', 'Entry Verva; easier pick-up', NULL),
+(1,'GM', 'Psyche Original', 'SH', 1170, 8.2, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'Timing/control; quick hands', NULL),
+(1,'GM', 'Psyche 808 Delta', 'Delta SH', 1165, 8.0, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'Delta handle; control focus', NULL),
+(1,'GM', 'Psyche Signature', 'SH', 1160, 8.3, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'Light pick-up; stroke-makers', NULL),
+(1,'GM', 'Psyche 606', 'SH', 1155, 8.4, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'Lighter spec; good for long innings', NULL),
+(1,'GM', 'Psyche 404', 'SH', 1140, 8.6, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Junior/entry; very easy pick-up', NULL),
+(1,'GM', 'Brava Original', 'SH', 1200, 6.8, 'mid', 'power', 'oval', 'standard', 'medium', 'Power all-round; mid swell', NULL),
+(1,'GM', 'Brava 909', 'SH', 1190, 7.0, 'mid', 'power', 'oval', 'standard', 'medium', 'Slightly easier pick-up; still powerful', NULL),
+(1,'GM', 'Brava 808', 'SH', 1175, 7.3, 'mid', 'balanced', 'oval', 'standard', 'medium', 'More balanced for control + power', NULL),
+(1,'GM', 'Brava 606', 'SH', 1160, 7.8, 'mid', 'balanced', 'oval', 'standard', 'medium', 'All-round balance; good bat speed', NULL),
+(1,'GM', 'Brava 404', 'SH', 1145, 8.2, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Entry Brava; easy pick-up', NULL),
+(1,'GM', 'Diamond DXM 808', 'SH', 1180, 7.4, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Classic all-round profile', NULL),
+(1,'GM', 'Diamond DXM 404', 'Harrow', 1030, 8.7, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Junior Harrow; very light pick-up', NULL),
+(1,'GM', 'Aion DXM Original', 'Senior', 1185, 7.6, 'mid', 'balanced', 'oval', 'standard', 'medium', 'All-round modern profile', NULL),
+(1,'GM', 'Aion DXM 909', 'Senior', 1175, 7.8, 'mid', 'balanced', 'oval', 'standard', 'medium', 'All-round; slightly lighter', NULL),
+(1,'GM', 'Aion DXM 808', 'Senior', 1160, 8.1, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Quick pick-up; good control', NULL),
+(1,'GM', 'Aion DXM 404', 'Junior', 1010, 9.0, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Junior; very easy pick-up', NULL),
+(1,'GM', 'Mana DXM 909', 'Senior', 1195, 7.2, 'mid_low', 'power', 'oval', 'standard', 'medium', 'Power lean with control', NULL),
+(1,'GM', 'Mana DXM 808', 'Senior', 1180, 7.5, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'Better pick-up; all-round', NULL),
+(1,'GM', 'Sparq DXM L.E.', 'SH', 1170, 8.0, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Light/fast; good for synthetic', NULL),
+(1,'Kookaburra', 'Kahuna Pro 1.0', 'SH', 1185, 7.2, 'mid_high', 'full_profile', 'round', 'standard', 'medium', 'Mid-high spine; strong carry', NULL),
+(1,'Kookaburra', 'Kahuna Pro 3.0', 'SH', 1170, 7.8, 'mid', 'balanced', 'round', 'standard', 'medium', 'All-round Kahuna; easier pick-up', NULL),
+(1,'Kookaburra', 'Kahuna Pro 3.0 Junior', 'Junior', 1030, 8.8, 'mid', 'balanced', 'round', 'standard', 'medium', 'Junior Kahuna; light pick-up', NULL),
+(1,'Kookaburra', 'Ghost Pro Players', 'SH', 1200, 6.8, 'low', 'power', 'round', 'standard', 'high', 'Big bow + edges; power hitting', NULL),
+(1,'Kookaburra', 'Ghost Pro Players Junior', 'Junior', 1040, 8.6, 'low', 'power', 'round', 'standard', 'high', 'Junior Ghost; power profile', NULL),
+(1,'Kookaburra', 'Stealth Pro (Long Handle)', 'LH', 1175, 7.6, 'low', 'short_blade_long_handle', 'round', 'long', 'high', 'Long handle/short blade; leverage', NULL),
+(1,'Kookaburra', 'Monarch Pro Players', 'SH', 1190, 7.0, 'mid', 'balanced', 'round', 'standard', 'medium', 'Traditional all-round; control', NULL),
+(1,'Kookaburra', 'Monarch Pro 3.0 Supalite', 'Supalite', 1145, 8.4, 'mid', 'balanced', 'round', 'standard', 'medium', 'Lighter build; fast hands', NULL),
+(1,'Kookaburra', 'Prism Pro 2.0', 'SH', 1170, 7.9, 'mid', 'balanced', 'round', 'standard', 'medium', 'All-round; quick pick-up', NULL),
+(1,'Kookaburra', 'Prism Pro 3.0 Supalite', 'Supalite', 1140, 8.6, 'mid', 'balanced', 'round', 'standard', 'medium', 'Supalite; very easy pick-up', NULL),
+(1,'Kookaburra', 'Prism Pro 4.0', 'SH', 1155, 8.3, 'mid', 'balanced', 'round', 'standard', 'medium', 'More forgiving; lighter spec', NULL),
+(1,'DSC', 'Spliit Pro', 'SH', 1195, 7.0, 'mid_low', 'power', 'oval', 'standard', 'medium', 'Aggressive profile; power + punch', NULL),
+(1,'DSC', 'Spliit 77', 'SH', 1185, 7.2, 'mid_low', 'power', 'oval', 'standard', 'medium', 'Powerful but manageable pick-up', NULL),
+(1,'DSC', 'Flip Pro', 'SH', 1180, 7.4, 'mid', 'power', 'oval', 'standard', 'medium', 'Big edges; strong hitting; mid sweet spot', NULL),
+(1,'DSC', 'Pearla Pro', 'SH', 1150, 8.4, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Elongated sweet spot; balance/timing', NULL),
+(1,'DSC', 'Krunch Pro', 'SH', 1205, 6.6, 'low', 'toe_heavy', 'oval', 'standard', 'medium', 'Heavier power feel; lower middle', NULL),
+(1,'DSC', 'Krunch 500', 'SH', 1180, 7.3, 'low', 'power', 'oval', 'standard', 'medium', 'Power leaning; better pick-up than Pro', NULL),
+(1,'DSC', 'Krunch 200', 'SH', 1160, 7.8, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'All-round; easier pick-up', NULL),
+(1,'DSC', 'Krunch 100', 'SH', 1145, 8.2, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Entry; fast hands', NULL),
+(1,'Gray-Nicolls', 'Fusion Players Edition', 'SH', 1180, 7.6, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Pro spec; all-round profile', NULL),
+(1,'Gray-Nicolls', 'Nova 3.0 Players Edition', 'SH', 1170, 7.9, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Fast pick-up; stroke play', NULL),
+(1,'Gray-Nicolls', 'Spectre Players Edition', 'SH', 1190, 7.2, 'mid_low', 'power', 'oval', 'standard', 'high', 'Power leaning; big bow', NULL),
+(1,'Gray-Nicolls', 'Blitz Players Edition', 'SH', 1200, 6.8, 'low', 'toe_heavy', 'oval', 'standard', 'high', 'Explosive power; can feel heavier', NULL),
+(1,'Gray-Nicolls', 'Arctos Players Edition', 'SH', 1185, 7.4, 'mid', 'balanced', 'oval', 'standard', 'medium', 'All-round; solid pick-up', NULL),
+(1,'Gray-Nicolls', 'Legend', 'SH', 1180, 7.5, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Classic all-round feel', NULL),
+(1,'Gray-Nicolls', 'Ultimate', 'SH', 1165, 8.1, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Light pick-up; control focus', NULL),
+(1,'Gray-Nicolls', 'TH123 Replica', 'SH', 1170, 7.8, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Replica profile; good pick-up', NULL),
+(1,'SS TON', 'TON Players Edition', 'SH', 1190, 7.1, 'mid_low', 'power', 'oval', 'standard', 'medium', 'Power leaning; strong punch', NULL),
+(1,'SS TON', 'TON Classic', 'SH', 1175, 7.6, 'mid', 'balanced', 'oval', 'standard', 'medium', 'All-round; timing/control', NULL),
+(1,'SS', 'SS Vintage', 'SH', 1180, 7.4, 'mid_low', 'balanced', 'oval', 'standard', 'medium', 'All-round with slight power bias', NULL),
+(1,'New Balance', 'NB English Willow Pro', 'SH', 1170, 8.0, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Fast pick-up; control friendly', NULL),
+(1,'New Balance', 'NB English Willow Power', 'SH', 1200, 6.9, 'low', 'power', 'oval', 'standard', 'high', 'Power profile; lower middle', NULL),
+(1,'New Balance', 'NB English Willow Junior', 'Junior', 1035, 8.7, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Junior; light pick-up', NULL);
 
-INSERT INTO bats (tenant_id, brand, model, size_label, weight_g, pickup_rating, sweet_spot, profile, handle_shape, handle_length, bow, notes, image_url)
-SELECT 1, 'Gunn & Moore', 'Icon Pro 909', 'SH', 1160, 8, 'mid', 'balanced', 'round', 'short', 'mid',
-       'Light pick-up feel, quick hands.', '/img/bats/bat-003.jpg'
-WHERE NOT EXISTS (SELECT 1 FROM bats WHERE brand='Gunn & Moore' AND model='Icon Pro 909');
+);
+
+
