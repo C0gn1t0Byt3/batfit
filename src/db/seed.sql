@@ -62,6 +62,4 @@ INSERT OR IGNORE INTO bats (
 (1,'New Balance', 'NB English Willow Power', 'SH', 1200, 6.9, 'low', 'power', 'oval', 'standard', 'high', 'Power profile; lower middle', NULL),
 (1,'New Balance', 'NB English Willow Junior', 'Junior', 1035, 8.7, 'mid', 'balanced', 'oval', 'standard', 'medium', 'Junior; light pick-up', NULL);
 
-);
-
 
