@@ -1,16 +1,683 @@
-<%
-  const content = `
-  <div class="card shadow-sm">
-    <div class="card-body p-4">
-      <h2 class="fw-bold">Developer Wiki</h2>
-      <p class="text-muted">Add your assignment tutorial content here.</p>
+<% const content=` <div class="card shadow-sm">
+  <div class="card-body p-4">
+    <h1 class="fw-bold">Developer Wiki</h1>
+    <h2 class="mt-4"><strong>Application Overview</strong></h2>
 
-      <h5 class="mt-4">Architecture</h5>
-      <ul>
-        <li>Express routes render EJS pages and also expose JSON APIs.</li>
-        <li>Recommendation engine is isolated in <code>src/services/recommendation</code>.</li>
-        <li>SQLite stores bats and fitting sessions (easy to upgrade to Postgres later).</li>
-      </ul>
+
+
+    <h2 class="mt-4"><strong>Architecture</strong></h2>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <img src="/img/architecture.png" class="img-fluid" alt="Application Overview">
+        </div>
+      </div>
+      <p class="mt-4">The Cricket Bat Fitting application follows a structured Express MVC-style architecture. User
+        interactions in the
+        browser trigger Express routes, which pass control to controller logic. The controllers process fitting inputs,
+        apply recommendation logic, and interact with the SQLite database for persistent storage. Complex user inputs
+        such
+        as the wagon wheel shot map are captured via HTML5 canvas and stored as JSON text, fulfilling the assignment
+        requirement for dynamic JSON-driven content. Results are rendered back to the user through EJS templates, while
+        admin features use authenticated routes secured with bcrypt password hashing.</p>
+
+      <section class="mb-3">
+        <h2><strong>Routing Structure</strong></h2>
+        <p>
+          The application uses a structured Express routing design to separate user fitting flows,
+          administrative functions, and JSON API endpoints. Routes are grouped by purpose to maintain
+          clarity, scalability, and separation of concerns.
+        </p>
+      </section>
+
+      <section class="mb-5">
+        <h3>1. Public Fitting Routes (<code>/fit/*</code>)</h3>
+        <p>
+          These routes handle the multi-step bat fitting process. Each step collects user inputs and
+          stores them as structured JSON for later processing and recommendations.
+        </p>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Method</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>/fit/start</td>
+              <td>GET</td>
+              <td>Displays the first fitting step</td>
+            </tr>
+            <tr>
+              <td>/fit/step/:id</td>
+              <td>GET</td>
+              <td>Displays a specific fitting step</td>
+            </tr>
+            <tr>
+              <td>/fit/step/:id</td>
+              <td>POST</td>
+              <td>Saves user input and moves to the next step</td>
+            </tr>
+            <tr>
+              <td>/fit/results/:fitId</td>
+              <td>GET</td>
+              <td>Displays final bat recommendation and explanation</td>
+            </tr>
+            <tr>
+              <td>/fit/saved</td>
+              <td>GET</td>
+              <td>Lists previously saved fitting sessions</td>
+            </tr>
+            <tr>
+              <td>/fit/saved/:id/edit</td>
+              <td>GET</td>
+              <td>Loads a saved fitting session for editing</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h5>Key Responsibilities</h5>
+        <ul>
+          <li>Collect structured user data</li>
+          <li>Capture canvas interaction (wagon wheel) as JSON text</li>
+          <li>Pass inputs to the recommendation logic</li>
+          <li>Render dynamic results using EJS templates</li>
+        </ul>
+      </section>
+
+      <section class="mb-5">
+        <h3>2. Admin Routes (<code>/admin/*</code>)</h3>
+        <p>
+          Admin routes allow management of the bat database and are protected by session-based
+          authentication with bcrypt password hashing.
+        </p>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Method</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>/admin/login</td>
+              <td>GET</td>
+              <td>Shows admin login page</td>
+            </tr>
+            <tr>
+              <td>/admin/login</td>
+              <td>POST</td>
+              <td>Authenticates admin using bcrypt hash comparison</td>
+            </tr>
+            <tr>
+              <td>/admin/logout</td>
+              <td>POST</td>
+              <td>Logs out admin and destroys session</td>
+            </tr>
+            <tr>
+              <td>/admin/bats</td>
+              <td>GET</td>
+              <td>Displays bat catalogue management page</td>
+            </tr>
+            <tr>
+              <td>/admin/bats/import</td>
+              <td>POST</td>
+              <td>Uploads CSV and performs validation + upsert</td>
+            </tr>
+            <tr>
+              <td>/admin/bats/edit/:id</td>
+              <td>GET</td>
+              <td>Edit bat details</td>
+            </tr>
+            <tr>
+              <td>/admin/bats/edit/:id</td>
+              <td>POST</td>
+              <td>Update bat details in database</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h5>Security Model</h5>
+        <ul>
+          <li>Passwords are <strong>not stored in plain text</strong></li>
+          <li>Authentication uses <code>bcrypt.compare()</code> against a hashed password</li>
+          <li>Successful login sets <code>req.session.isAdmin = true</code></li>
+          <li>Admin routes check this session flag before allowing access</li>
+        </ul>
+      </section>
+
+      <section class="mb-5">
+        <h3>3. API Routes (<code>/api/*</code>)</h3>
+        <p>
+          API routes provide JSON responses and demonstrate server-side data exposure independent
+          of rendered pages.
+        </p>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Method</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>/api/bats</td>
+              <td>GET</td>
+              <td>Returns a JSON list of all bats</td>
+            </tr>
+            <tr>
+              <td>/api/bats/:id</td>
+              <td>GET</td>
+              <td>Returns details for a specific bat</td>
+            </tr>
+            <tr>
+              <td>/api/fits/:id</td>
+              <td>GET</td>
+              <td>Returns stored JSON fitting data</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          These routes demonstrate separation between data services and HTML rendering, fulfilling
+          the assignment requirement for JSON-driven content.
+        </p>
+      </section>
+
+      <section class="mb-5">
+        <h3>4. Route → Controller Flow</h3>
+        <pre>
+Client Request
+   ↓
+Express Route Handler
+   ↓
+Controller / Logic Layer
+   ↓
+Database + JSON Processing
+   ↓
+EJS View OR JSON Response
+  </pre>
+
+        <p>
+          Routes are kept lightweight and primarily responsible for validating request parameters,
+          calling controller functions, and returning rendered views or JSON responses.
+        </p>
+      </section>
+
+      <section class="mb-5">
+        <h3>5. Error Handling</h3>
+        <ul>
+          <li>Unknown routes return a custom 404 page</li>
+          <li>Server errors are caught and logged</li>
+          <li>API routes return JSON error responses while page routes render error views</li>
+        </ul>
+        <p>
+          This demonstrates structured backend design beyond simple page rendering.
+        </p>
+      </section>
+
+      <section class="mb-5">
+        <h2><strong>Database Schema</strong></h2>
+        <p>
+          The application uses SQLite as a lightweight relational database to store bat catalogue
+          information and user fitting sessions. Data persistence ensures users can save and revisit
+          previous fittings, fulfilling the assignment requirement for permanent artifact storage.
+        </p>
+
+        <h4>1. Tenants Table</h4>
+        <p>
+          The system supports a tenant structure to allow data separation. A default tenant is created
+          for single-user operation, but the schema allows future expansion.
+        </p>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>id</td>
+              <td>INTEGER (PK)</td>
+              <td>Unique tenant identifier</td>
+            </tr>
+            <tr>
+              <td>name</td>
+              <td>TEXT</td>
+              <td>Tenant or organisation name</td>
+            </tr>
+            <tr>
+              <td>created_at</td>
+              <td>TEXT</td>
+              <td>Timestamp of tenant creation</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>2. Bats Table</h4>
+        <p>This table stores the cricket bat catalogue used by the recommendation engine.</p>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>id</td>
+              <td>INTEGER (PK)</td>
+              <td>Unique bat identifier</td>
+            </tr>
+            <tr>
+              <td>tenant_id</td>
+              <td>INTEGER (FK)</td>
+              <td>Links bat to a tenant</td>
+            </tr>
+            <tr>
+              <td>brand</td>
+              <td>TEXT</td>
+              <td>Bat brand name</td>
+            </tr>
+            <tr>
+              <td>model</td>
+              <td>TEXT</td>
+              <td>Bat model name</td>
+            </tr>
+            <tr>
+              <td>size_label</td>
+              <td>TEXT</td>
+              <td>Bat size (e.g., SH, Harrow, 6)</td>
+            </tr>
+            <tr>
+              <td>weight_g</td>
+              <td>INTEGER</td>
+              <td>Bat weight in grams</td>
+            </tr>
+            <tr>
+              <td>pickup_rating</td>
+              <td>INTEGER</td>
+              <td>Perceived pickup rating (1–10)</td>
+            </tr>
+            <tr>
+              <td>sweet_spot</td>
+              <td>TEXT</td>
+              <td>Sweet spot position (Low, Mid, High)</td>
+            </tr>
+            <tr>
+              <td>profile</td>
+              <td>TEXT</td>
+              <td>Blade profile type</td>
+            </tr>
+            <tr>
+              <td>handle_shape</td>
+              <td>TEXT</td>
+              <td>Handle shape (Oval, Round)</td>
+            </tr>
+            <tr>
+              <td>handle_length</td>
+              <td>TEXT</td>
+              <td>Handle length (Short, Standard, Long)</td>
+            </tr>
+            <tr>
+              <td>bow</td>
+              <td>TEXT</td>
+              <td>Blade bow type (Low, Mid, High)</td>
+            </tr>
+            <tr>
+              <td>notes</td>
+              <td>TEXT</td>
+              <td>Additional bat notes</td>
+            </tr>
+            <tr>
+              <td>image_url</td>
+              <td>TEXT</td>
+              <td>Optional image reference</td>
+            </tr>
+            <tr>
+              <td>created_at</td>
+              <td>TEXT</td>
+              <td>Record creation timestamp</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          A unique constraint on <code>(tenant_id, brand, model, size_label)</code> ensures duplicate bats
+          are not inserted during CSV imports. Instead, existing entries are updated using upsert logic.
+        </p>
+
+        <h4>3. Fits Table</h4>
+        <p>
+          This table stores complete user fitting sessions, including structured measurements and
+          JSON-based artifacts produced during the fitting process.
+        </p>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>id</td>
+              <td>INTEGER (PK)</td>
+              <td>Unique fitting session identifier</td>
+            </tr>
+            <tr>
+              <td>tenant_id</td>
+              <td>INTEGER</td>
+              <td>Associated tenant</td>
+            </tr>
+            <tr>
+              <td>created_at</td>
+              <td>TEXT</td>
+              <td>Date and time of fitting</td>
+            </tr>
+            <tr>
+              <td>height_cm</td>
+              <td>INTEGER</td>
+              <td>User height measurement</td>
+            </tr>
+            <tr>
+              <td>weight_kg</td>
+              <td>INTEGER</td>
+              <td>User weight</td>
+            </tr>
+            <tr>
+              <td>hand_size_cm</td>
+              <td>REAL</td>
+              <td>Measured hand size</td>
+            </tr>
+            <tr>
+              <td>floor_to_wrist_cm</td>
+              <td>REAL</td>
+              <td>Reach measurement</td>
+            </tr>
+            <tr>
+              <td>shot_type</td>
+              <td>TEXT</td>
+              <td>Preferred shot style</td>
+            </tr>
+            <tr>
+              <td>conditions</td>
+              <td>TEXT</td>
+              <td>Typical playing conditions</td>
+            </tr>
+            <tr>
+              <td>footwork</td>
+              <td>TEXT</td>
+              <td>Footwork style</td>
+            </tr>
+            <tr>
+              <td>batter_style</td>
+              <td>TEXT</td>
+              <td>Batting approach</td>
+            </tr>
+            <tr>
+              <td>max_distance_m</td>
+              <td>INTEGER</td>
+              <td>Maximum hitting distance</td>
+            </tr>
+            <tr>
+              <td>experience</td>
+              <td>TEXT</td>
+              <td>Player experience level</td>
+            </tr>
+            <tr>
+              <td>brand_filter</td>
+              <td>TEXT</td>
+              <td>Optional brand preference</td>
+            </tr>
+            <tr>
+              <td>input_json</td>
+              <td>TEXT</td>
+              <td>Serialized user fitting inputs</td>
+            </tr>
+            <tr>
+              <td>shot_map_json</td>
+              <td>TEXT</td>
+              <td>Serialized canvas wagon wheel data</td>
+            </tr>
+            <tr>
+              <td>result_json</td>
+              <td>TEXT</td>
+              <td>Serialized recommendation and explanation</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          JSON data is stored as TEXT fields within SQLite. Controllers are responsible for
+          serializing JavaScript objects into JSON strings when saving and parsing them back
+          into objects when loading saved sessions.
+        </p>
+      </section>
+
+
+      <section class="mb-5">
+        <h2><strong>JSON Data Handling </strong></h2>
+        <p>
+          JSON is used throughout the application as the primary data interchange format between
+          the front end, server logic, and database. This supports dynamic content generation and
+          fulfills the requirement for JSON-driven data processing.
+        </p>
+
+        <h4>1. User Input JSON</h4>
+        <p>
+          During the fitting process, user selections (e.g., playing style, height, grip preference)
+          are collected and structured into a JavaScript object. This object is then serialized into
+          JSON and stored in the <code>input_json</code> database column.
+        </p>
+
+        <h4>2. Canvas Shot Map JSON</h4>
+        <p>
+          The wagon wheel canvas allows users to draw where they play shots most frequently.
+          JavaScript captures click coordinates and converts them into structured JSON data.
+          This JSON is stored in the <code>shot_map_json</code> column and can later be reloaded
+          to recreate or analyze shot patterns.
+        </p>
+
+        <h4>3. Recommendation Result JSON</h4>
+        <p>
+          The recommendation engine generates structured output explaining why a particular bat
+          was selected. This includes scoring factors and match reasoning, which are stored as
+          JSON in the <code>result_json</code> column.
+        </p>
+
+        <h4>4. JSON Lifecycle</h4>
+        <pre>
+User Input / Canvas Interaction
+        ↓
+JavaScript Object
+        ↓
+JSON.stringify()
+        ↓
+Stored as TEXT in SQLite
+        ↓
+Retrieved from Database
+        ↓
+JSON.parse()
+        ↓
+Rendered in Results View or API Response
+  </pre>
+
+        <p>
+          This lifecycle demonstrates how JSON acts as a flexible, structured format for capturing
+          complex user-generated data while still being stored in a relational database system.
+        </p>
+
+        <h4>5. API JSON Responses</h4>
+        <p>
+          API routes such as <code>/api/bats</code> return database records as JSON, allowing the
+          application to provide machine-readable data alongside traditional HTML views.
+        </p>
+
+        <p>
+          Together, these mechanisms demonstrate full-stack JSON handling from user interaction
+          to persistent storage and back to dynamic rendering.
+        </p>
+      </section>
+
+<section class="mb-5">
+  <h2><strong>Canvas Interaction</strong></h2>
+
+  <p>
+    The application uses an HTML5 Canvas to capture user shot-placement patterns in an interactive
+    “wagon wheel” style tool. This provides advanced client-side interaction beyond standard
+    form inputs and produces a structured JSON artifact that is stored alongside the fitting session.
+  </p>
+
+  <h4>1. What the User Does</h4>
+  <ul>
+    <li>The user clicks (or taps) on the canvas to mark common shot locations.</li>
+    <li>Each interaction is recorded as a coordinate point relative to the canvas.</li>
+    <li>The canvas updates immediately to provide visual feedback (points/markers/heat zones).</li>
+  </ul>
+
+  <h4>2. What the Browser Generates</h4>
+  <p>
+    The client-side script converts canvas interactions into a JSON structure such as an array of points
+    (or zones), for example:
+  </p>
+
+  <pre>{
+  "points": [
+    { "x": 214, "y": 156, "type": "hit" },
+    { "x": 355, "y": 240, "type": "hit" }
+  ],
+  "meta": {
+    "canvasWidth": 600,
+    "canvasHeight": 400
+  }
+}</pre>
+
+  <p>
+    This JSON is then serialized into a string using <code>JSON.stringify()</code> and stored in a hidden
+    form field (e.g., <code>&lt;input type="hidden" name="shot_map_json"&gt;</code>). When the user submits
+    the fitting step, the JSON is posted to the server as part of the normal form submission.
+  </p>
+
+  <h4>3. How the Server Stores It</h4>
+  <ul>
+    <li>The route handler receives the JSON string (e.g., <code>req.body.shot_map_json</code>).</li>
+    <li>The controller validates the payload (non-empty JSON, expected keys, safe size limits).</li>
+    <li>The JSON is stored in SQLite in the <code>fits.shot_map_json</code> TEXT column.</li>
+  </ul>
+
+  <h4>4. Reloading a Saved Session</h4>
+  <p>
+    When a user loads a saved fit, the server retrieves <code>shot_map_json</code> from the database and
+    returns it to the browser. The client script parses it using <code>JSON.parse()</code> and redraws the
+    canvas markers so the user can review or edit their shot map.
+  </p>
+
+  <p class="mb-0">
+    <strong>Why this matters:</strong> This demonstrates a full data lifecycle for complex user-generated
+    content: Canvas interaction → JSON artifact → database persistence → later retrieval and re-rendering.
+  </p>
+</section>
+
+
+<section class="mb-5">
+  <h2><strong>Fitting Process Workflow</strong></h2>
+
+  <p>
+    The fitting process is implemented as a multi-step workflow. Each step collects a subset of user inputs,
+    stores them as a fitting session, and progressively builds enough information to generate a final bat recommendation.
+    The workflow supports saving sessions and reloading them for editing.
+  </p>
+
+  <h4>1. High-Level Flow (use your flowchart image here)</h4>
+  <p>
+    The following diagram summarises the user journey and how data moves through the system:
+  </p>
+
+  <figure class="mb-4">
+    <img src="/img/fitting.png" alt="Fitting process flowchart" class="img-fluid border rounded">
+    <figcaption class="mt-2 text-muted">
+      Fitting workflow: multi-step inputs, canvas capture, JSON persistence, recommendation generation, results display.
+    </figcaption>
+  </figure>
+
+  <h4>2. Step-by-Step Behaviour</h4>
+  <ol>
+    <li>
+      <strong>Start / New Fit:</strong> The user begins a new session and the application creates (or prepares)
+      a fitting record context.
+    </li>
+    <li>
+      <strong>Multi-step Inputs:</strong> Each step captures structured data (e.g., measurements, preferences,
+      playing style). The server stores raw inputs in <code>fits.input_json</code> and may also store key fields
+      in dedicated columns (e.g., <code>height_cm</code>, <code>hand_size_cm</code>) for easier querying.
+    </li>
+    <li>
+      <strong>Canvas Shot Map (optional step):</strong> The user records shot locations on the canvas. This data
+      is stored in <code>fits.shot_map_json</code> as a JSON artifact.
+    </li>
+    <li>
+      <strong>Recommendation Engine:</strong> Once sufficient inputs are collected, the controller runs the matching
+      logic against the bat catalogue in the <code>bats</code> table.
+    </li>
+    <li>
+      <strong>Result + Explanation:</strong> The selected bat and explanation factors are stored in
+      <code>fits.result_json</code> and rendered on the results page.
+    </li>
+    <li>
+      <strong>Saved Fits:</strong> Users can view prior sessions, reload them, and re-run the recommendation after edits.
+    </li>
+  </ol>
+
+  <h4>3. Data Artifacts Produced</h4>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Stored In</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>input_json</code></td>
+        <td><code>fits.input_json</code></td>
+        <td>Full set of user selections and measurements (source of truth for the session)</td>
+      </tr>
+      <tr>
+        <td><code>shot_map_json</code></td>
+        <td><code>fits.shot_map_json</code></td>
+        <td>Canvas shot placement data captured as JSON text</td>
+      </tr>
+      <tr>
+        <td><code>result_json</code></td>
+        <td><code>fits.result_json</code></td>
+        <td>Recommendation output and explanation (scoring/match reasoning)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="mb-0">
+    <strong>Implementation note:</strong> JSON is stored as TEXT in SQLite. The controllers serialize objects with
+    <code>JSON.stringify()</code> when saving and reconstruct them using <code>JSON.parse()</code> when loading.
+  </p>
+</section>
+
+
 
       <h5 class="mt-4">REST Endpoints</h5>
       <ul>
@@ -20,5 +687,5 @@
     </div>
   </div>
   `;
-%>
-<%- include("../layouts/main", { title, body: content }) %>
+  %>
+  <%- include("../layouts/main", { title, body: content }) %>
