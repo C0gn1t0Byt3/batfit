@@ -25,5 +25,13 @@ pipeline {
                 sh 'npm run security || true'
             }
         }
+	
+	stage('Code Quality') {
+   	    steps {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            sh 'npm run sonar -- -Dsonar.token=$SONAR_TOKEN'
+        }
+    }
+}
     }
 }
