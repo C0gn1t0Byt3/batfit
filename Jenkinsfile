@@ -56,10 +56,6 @@ pipeline {
 	    steps {
 	        withCredentials([string(credentialsId: 'uptimerobot-api-key', variable: 'UPTIMEROBOT_API_KEY')]) {
 	            sh '''
-	            echo "Installing curl..."
-	            sudo apt-get update -y
-	            sudo apt-get install -y curl
-	
 	            echo "Checking UptimeRobot monitor status for production..."
 
 	            RESPONSE=$(curl -s -X POST https://api.uptimerobot.com/v2/getMonitors \
@@ -67,7 +63,7 @@ pipeline {
 	              -d "api_key=$UPTIMEROBOT_API_KEY" \
 	              -d "format=json" \
 	              -d "search=batfit-devops.onrender.com")
-	
+
 	            echo "$RESPONSE"
 
 	            echo "$RESPONSE" | grep '"status":2' || {
