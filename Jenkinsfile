@@ -20,18 +20,18 @@ pipeline {
             }
         }
 
+        stage('Code Quality') {
+            steps {
+                withCredentials([string(credentialsId: '7.3HD_sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh 'npm run sonar -- -Dsonar.token=$SONAR_TOKEN'
+                }
+            }
+        }
+
         stage('Security Scan') {
             steps {
                 sh 'npm run security || true'
             }
         }
-	
-	stage('Code Quality') {
-   	    steps {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            sh 'npm run sonar -- -Dsonar.token=$SONAR_TOKEN'
-        }
-    }
-}
     }
 }
