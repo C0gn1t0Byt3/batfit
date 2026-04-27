@@ -36,7 +36,7 @@ pipeline {
 
 	stage('Deploy') {
 	    steps {
-	        sh 'docker build -t batfit-app .'
+	        sh 'docker build -t batfit-app:{BUILD_NUMBER} .'
 	        sh 'docker stop batfit-container || true'
 	        sh 'docker rm batfit-container || true'
 	        sh 'docker run -d -p 3000:3000 --name batfit-container batfit-app'
