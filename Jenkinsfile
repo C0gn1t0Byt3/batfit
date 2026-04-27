@@ -56,7 +56,12 @@ pipeline {
 	    steps {
 	        withCredentials([string(credentialsId: 'uptimerobot-api-key', variable: 'UPTIMEROBOT_API_KEY')]) {
 	            sh '''
+	            echo "Installing curl..."
+	            sudo apt-get update -y
+	            sudo apt-get install -y curl
+	
 	            echo "Checking UptimeRobot monitor status for production..."
+
 	            RESPONSE=$(curl -s -X POST https://api.uptimerobot.com/v2/getMonitors \
 	              -H "Content-Type: application/x-www-form-urlencoded" \
 	              -d "api_key=$UPTIMEROBOT_API_KEY" \
@@ -69,7 +74,7 @@ pipeline {
 	              echo "ALERT: UptimeRobot reports production monitor is not UP"
 	              exit 1
 	            }
-	
+
 	            echo "Production monitor is UP in UptimeRobot"
 	            '''
 	        }
