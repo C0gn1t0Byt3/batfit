@@ -37,8 +37,19 @@ pipeline {
 	stage('Deploy') {
 	    steps {
 	        sh 'docker build -t batfit-app .'
-	        sh 'docker run -d -p 3000:3000 --name batfit-container batfit-app || true'
+	        sh 'docker stop batfit-container || true'
+	        sh 'docker rm batfit-container || true'
+	        sh 'docker run -d -p 3000:3000 --name batfit-container batfit-app'
 	    }
-}
+	}
+
+	stage('Release') {
+	    steps {
+	        sh 'docker tag batfit-app:${BUILD_NUMBER} batfit-app:production'
+	        sh 'docker stop batfit-prod || true'
+	        sh 'docker rm batfit-prod || true'
+	        sh 'docker run -d -p 3001:3000 --name batfit-prod batfit-app:production'
+	    }
+	}
     }
 }
