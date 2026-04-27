@@ -34,15 +34,17 @@ pipeline {
             }
         }
 
-        stage('Deploy to Test') {
-            steps {
-                sh 'docker build -t batfit-app:${BUILD_NUMBER} .'
-                sh 'docker stop batfit-test || true'
-                sh 'docker rm batfit-test || true'
-                sh 'docker run -d -p 3000:3000 --name batfit-test batfit-app:${BUILD_NUMBER}'
-            }
-        }
-
+	stage('Deploy to Test') {
+	    steps {
+	        sh '''
+	        docker stop batfit-test || true
+	        docker rm batfit-test || true
+	        docker ps -q --filter "publish=3000" | xargs -r docker stop
+	        docker build -t batfit-app:${BUILD_NUMBER} .
+	        docker run -d -p 3000:3000 --name batfit-test batfit-app:${BUILD_NUMBER}
+	        '''
+	    }
+	}
         stage('Release to Production') {
             steps {
                 echo 'Production release is handled by Render auto-deploy from the devops-hd-pipeline branch.'
