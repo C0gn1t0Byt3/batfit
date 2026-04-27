@@ -34,21 +34,43 @@ pipeline {
             }
         }
 
-	stage('Deploy') {
-	    steps {
-	        sh 'docker build -t batfit-app:${BUILD_NUMBER} .'
-	        sh 'docker stop batfit-container || true'
-	        sh 'docker rm batfit-container || true'
-	        sh 'docker run -d -p 3000:3000 --name batfit-container batfit-app'
-	    }
-	}
+        stage('Deploy to Test') {
+            steps {
+                sh 'docker build -t batfit-app:${BUILD_NUMBER} .'
+                sh 'docker stop batfit-test || true'
+                sh 'docker rm batfit-test || true'
+                sh 'docker run -d -p 3000:3000 --name batfit-test batfit-app:${BUILD_NUMBER}'
+            }
+        }
 
-	stage('Release') {
+        stage('Release to Production') {
+            steps {
+                echo 'Production release is handled by Render auto-deploy from the devops-hd-pipeline branch.'
+                echo 'Render production URL: https://batfit-devops.onrender.com'
+            }
+        }
+
+	stage('Monitoring and Alerting') {
 	    steps {
-	        sh 'docker tag batfit-app:${BUILD_NUMBER} batfit-app:production'
-	        sh 'docker stop batfit-prod || true'
-	        sh 'docker rm batfit-prod || true'
-	        sh 'docker run -d -p 3001:3000 --name batfit-prod batfit-app:production'
+	        withCredentials([string(credentialsId: 'uptimerobot-api-key', variable: 'UPTIMEROBOT_API_KEY')]) {
+	            sh '''
+	            echo "Checking UptimeRobot monitor status for production..."
+	            RESPONSE=$(curl -s -X POST https://api.uptimerobot.com/v2/getMonitors \
+	              -H "Content-Type: application/x-www-form-urlencoded" \
+	              -d "api_key=$UPTIMEROBOT_API_KEY" \
+	              -d "format=json" \
+	              -d "search=batfit-devops.onrender.com")
+	
+	            echo "$RESPONSE"
+
+	            echo "$RESPONSE" | grep '"status":2' || {
+	              echo "ALERT: UptimeRobot reports production monitor is not UP"
+	              exit 1
+	            }
+	
+	            echo "Production monitor is UP in UptimeRobot"
+	            '''
+	        }
 	    }
 	}
     }
