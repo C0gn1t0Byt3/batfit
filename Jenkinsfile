@@ -33,5 +33,12 @@ pipeline {
                 sh 'npm run security || true'
             }
         }
+
+	stage('Deploy') {
+	    steps {
+	        sh 'docker build -t batfit-app .'
+	        sh 'docker run -d -p 3000:3000 --name batfit-container batfit-app || true'
+	    }
+}
     }
 }
